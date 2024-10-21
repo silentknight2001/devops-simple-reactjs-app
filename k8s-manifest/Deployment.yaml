@@ -1,0 +1,23 @@
+apiVersion: app/v1
+kind: Deployment
+metadata:
+  name: react-app
+  labels:
+    role: react-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: react-app
+  template:
+    metadata:
+      labels:
+        role: react-app
+    spec:
+      containers:
+      - name: react-app
+        image: nayan2001/react-app:latest
+        imagePullPolicy: always
+        ports:
+          containerPort: 3000
+
