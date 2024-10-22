@@ -6,6 +6,11 @@ metadata:
     role: react-app
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurg: 1
+      maxUnavailable: 25%
   selector:
     matchLabels:
       role: react-app
