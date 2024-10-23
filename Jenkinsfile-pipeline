@@ -1,0 +1,79 @@
+pipeline{
+    agent any
+   tools{
+    jdk 'jdk'
+    nodejs 'nodejs'
+   } 
+   environment{
+    SCANNER_HOME=tools 'sonar-token'
+   }
+   stages{
+    stage('clean environment'){
+        steps{
+            cleanWs()
+        }
+    }
+      stage('git checkout '){
+        steps{
+            git credentialsId:' gitcred', url:'https://github.com/silentknight2001/devops-simple-reactjs-app.git'
+        }
+    }
+      stage('sonar-qube anaylysis'){
+        steps{
+                withSonarQubeEnv(credentialsId: 'sonar-cred') {
+                  sh '''
+                    $SCANNER_HOME/bin/sonar-scanner \
+                     -Dsonar.projectName: 'devops-simple-reactjs-app'\
+                     -Dsonar.projectKey: 'devops-simple-reactjs-app'\
+                    '''
+             }
+         
+        }
+    }
+      stage('qulity gate check'){
+        steps{
+            script{
+                waitForQualityGate abortPipeline: false, credentialsId: 'sonar-cred'
+            }
+        }
+    }
+      stage('OWASP Dependency-check Scan'){
+         steps{
+            dependencyCheck additionalArguments: '--can ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
+            dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+         }
+    }
+      stage('trivy file system scan'){
+        steps{
+            sh 'trivy fs . > trivy-repot.txt'
+        }
+    }
+      stage('clean environment'){
+        steps{
+            cleanWs()
+        }
+    }
+      stage('build and tag dokcer image'){
+        steps{
+            sh 'docker system prune -f'
+            sh 'docker container prune -f'
+            sh 'docker build -t nayan2001/devops-simple-reactjs-app:latest .'
+        }
+    }
+      stage('trivy docker image scan'){
+        steps{
+            sh 'trivy image --format table -output trivy-image-report.html nayan2001/devops-simple-reactjs-app:latest'
+        }
+    }
+      stage('image push to docker hub'){
+        steps{
+            script{ 
+            withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker', url: 'https://index.docker.io/v1/') {
+                sh 'docker push nayan2001/devops-simple-reactjs-app:latest'
+                }
+            }
+        }
+    }
+      
+   }
+}
