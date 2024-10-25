@@ -6,6 +6,7 @@ pipeline{
    } 
    environment{
     SCANNER_HOME=tools 'sonar-token'
+    GITHUB_TOKEN = 'gitcred'
    }
    stages{
     stage('clean environment'){
@@ -48,16 +49,11 @@ pipeline{
             sh 'trivy fs . > trivy-repot.txt'
         }
     }
-      stage('clean environment'){
-        steps{
-            cleanWs()
-        }
-    }
       stage('build and tag dokcer image'){
         steps{
             sh 'docker system prune -f'
             sh 'docker container prune -f'
-            sh 'docker build -t nayan2001/devops-simple-reactjs-app:latest .'
+            sh 'docker build -t nayan2001/devops-simple-reactjs-app:${BUILD_NUMBER} .'
         }
     }
       stage('trivy docker image scan'){
@@ -69,11 +65,35 @@ pipeline{
         steps{
             script{ 
             withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker', url: 'https://index.docker.io/v1/') {
-                sh 'docker push nayan2001/devops-simple-reactjs-app:latest'
+                sh 'docker push nayan2001/devops-simple-reactjs-app:${BUILD_NUMBER}'
                 }
             }
         }
     }
-      
+    stage{
+            environment{
+                GIT_REPO_NAME = "devops-simple-reactjs-app"
+                GIT_USER_NAME = "silentknight2001"
+                IMAGE = "nayan2001/react-app"
+            }
+            steps{
+                dir('k8s-menifast'){
+                    withCredentials([string(credentialsId: 'github', variable: 'gitcred')]){
+                        sh '''
+                            git config user.email "silentknight.www@gmail.com"
+                            git config user.name "silentknight2001"
+                            BUILD_NUMBER=${BUILD_NUMBER}
+                            echo $BUILD_NUMBER
+                            imageTag=$(grep -oP '(?<=nayan2001/react-app:)[^ ]+' deployment.yaml)
+                            echo $imagetag
+                            sed -i "s/${IMAGE}:${imageTag}/${IMAGE}:${BUILD_NUMBER}/" deployment.yaml
+                            git add deployment.yaml
+                            git commit -m "Update deployment image to version \${BUILD_NUMBER}"
+                            git push https://${gitcred}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                        '''
+                    }
+                }
+            }
+        }
    }
 }
