@@ -84,11 +84,11 @@ pipeline{
                             git config user.name "silentknight2001"
                             BUILD_NUMBER=${BUILD_NUMBER}
                             echo $BUILD_NUMBER
-                            imageTag=$(grep -oP '(?<=nayan2001/react-app:)[^ ]+' deployment.yaml)
-                            echo $imagetag
-                            sed -i "s/${IMAGE}:${imageTag}/${IMAGE}:${BUILD_NUMBER}/" deployment.yaml
-                            git add deployment.yaml
-                            git commit -m "Update deployment image to version \${BUILD_NUMBER}"
+                            imageTag=$(grep -oP '(?<=nayan2001/react-app:)[^ ]+' Deployment.yaml)
+                            echo $imageTag
+                            sed -i "s/${IMAGE}:${imageTag}/${IMAGE}:${BUILD_NUMBER}/" Deployment.yaml
+                            git add Deployment.yaml
+                            git commit -m "Update Deployment image to version \${BUILD_NUMBER}"
                             git push https://${gitcred}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
                         '''
                     }
