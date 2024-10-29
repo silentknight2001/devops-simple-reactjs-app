@@ -70,7 +70,7 @@ pipeline{
             }
         }
     }
-    stage{
+    stage('update deployment fil'){
             environment{
                 GIT_REPO_NAME = "devops-simple-reactjs-app"
                 GIT_USER_NAME = "silentknight2001"
@@ -97,3 +97,4 @@ pipeline{
         }
    }
 }
+
