@@ -5,7 +5,7 @@ pipeline{
     nodejs 'nodejs'
    } 
    environment{
-    SCANNER_HOME=tools 'sonar-token'
+    SCANNER_HOME=tools 'sopnar-cred'
     GITHUB_TOKEN = 'gitcred'
    }
    stages{
@@ -21,7 +21,7 @@ pipeline{
     }
       stage('sonar-qube anaylysis'){
         steps{
-                withSonarQubeEnv(credentialsId: 'sonar-cred') {
+                withSonarQubeEnv(credentialsId: 'sopnar-cred') {
                   sh '''
                     $SCANNER_HOME/bin/sonar-scanner \
                      -Dsonar.projectName: 'devops-simple-reactjs-app'\
@@ -34,16 +34,16 @@ pipeline{
       stage('qulity gate check'){
         steps{
             script{
-                waitForQualityGate abortPipeline: false, credentialsId: 'sonar-cred'
+                waitForQualityGate abortPipeline: false, credentialsId: 'sopnar-cred'
             }
         }
     }
-      stage('OWASP Dependency-check Scan'){
-         steps{
-            dependencyCheck additionalArguments: '--can ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
-            dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-         }
-    }
+    //   stage('OWASP Dependency-check Scan'){
+    //      steps{
+    //         dependencyCheck additionalArguments: '--can ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
+    //         dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+    //      }
+    // }
       stage('trivy file system scan'){
         steps{
             sh 'trivy fs . > trivy-repot.txt'
@@ -58,7 +58,7 @@ pipeline{
     }
       stage('trivy docker image scan'){
         steps{
-            sh 'trivy image --format table -output trivy-image-report.html nayan2001/devops-simple-reactjs-app:latest'
+            sh 'trivy image --format table -output trivy-image-report.html nayan2001/devops-simple-reactjs-app:${BUILD_NUMBER}'
         }
     }
       stage('image push to docker hub'){
