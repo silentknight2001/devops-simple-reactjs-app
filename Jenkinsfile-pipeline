@@ -5,7 +5,7 @@ pipeline{
     nodejs 'nodejs'
    } 
    environment{
-    SCANNER_HOME=tools 'sopnar-cred'
+    SCANNER_HOME=tools 'sonar-scanner'
     GITHUB_TOKEN = 'gitcred'
    }
    stages{
@@ -34,7 +34,7 @@ pipeline{
       stage('qulity gate check'){
         steps{
             script{
-                waitForQualityGate abortPipeline: false, credentialsId: 'sopnar-cred'
+                waitForQualityGate abortPipeline: false, credentialsId: 'sonar-scanner'
             }
         }
     }
