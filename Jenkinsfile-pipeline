@@ -21,7 +21,7 @@ pipeline{
     }
       stage('sonar-qube anaylysis'){
         steps{
-                withSonarQubeEnv(credentialsId: 'sonar-scanner') {
+                withSonarQubeEnv('sonar') {
                   sh '''
                     $SCANNER_HOME/bin/sonar-scanner \
                      -Dsonar.projectName: 'devops-simple-reactjs-app'\
